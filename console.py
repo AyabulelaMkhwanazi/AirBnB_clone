@@ -139,7 +139,8 @@ recognized.
 In this case it will be used to handle the <class name>.all(),
 <class name>.count(), <class name>.show(<id>) and
 <class name>.destroy(<id>),
-<class name>.update(<id>, <attribute name>, <attribute value>) syntax.
+<class name>.update(<id>, <attribute name>, <attribute value>),
+<class name>.update(<id>, <dictionary representation>) syntax.
         """
         if len(line.split(".")) != 2:
             print("** Unknown syntax: {}".format(line))
