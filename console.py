@@ -139,7 +139,8 @@ or updating attribute.
         """Method called on an input line when the command prefix is not
 recognized.
 In this case it will be used to handle the <class name>.all(),
-<class name>.count(), and <class name>.show(<id>) syntax.
+<class name>.count(), <class name>.show(<id>) and
+<class name>.destroy(<id>) syntax.
         """
         if len(line.split(".")) != 2:
             print("** Unknown syntax: {}".format(line))
@@ -162,6 +163,13 @@ In this case it will be used to handle the <class name>.all(),
             id = id.strip('"')
             # call da 'do_show' method with the class name and id as arguments
             self.do_show(class_name + " " + id)
+        # if method starts with 'destroy(' & ends with ')', it's a 'destroy'
+        # command
+        elif method.startswith("destroy(") and method.endswith(")"):
+            id = method[8:-1]
+            id = id.strip('"')  # extract the quotes, like before (if any)
+            # call the 'do_destroy' method with the class name and id as args
+            self.do_destroy(class_name + " " + id)
 
     def do_count(self, class_name):
         """Prints the count of instances based on the class name.
