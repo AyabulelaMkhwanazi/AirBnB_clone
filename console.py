@@ -140,7 +140,8 @@ or updating attribute.
 recognized.
 In this case it will be used to handle the <class name>.all(),
 <class name>.count(), <class name>.show(<id>) and
-<class name>.destroy(<id>) syntax.
+<class name>.destroy(<id>),
+<class name>.update(<id>, <attribute name>, <attribute value>) syntax.
         """
         if len(line.split(".")) != 2:
             print("** Unknown syntax: {}".format(line))
@@ -170,6 +171,21 @@ In this case it will be used to handle the <class name>.all(),
             id = id.strip('"')  # extract the quotes, like before (if any)
             # call the 'do_destroy' method with the class name and id as args
             self.do_destroy(class_name + " " + id)
+        elif method.startswith("update(") and method.endswith(")"):
+            # extract the arguments from the method string
+            args = method[7:-1].split(", ")
+            if len(args) != 3:
+                print("** Invalid arguments **")
+                return
+            id, attribute_name, attribute_value = args
+            # extract the quotes from the arguments (dah)
+            id = id.strip('"')
+            attribute_name = attribute_name.strip('"')
+            attribute_value = attribute_value.strip('"')
+            # call the 'do_update' method with the class name, id,
+            # attribute name, and attribute value as arguments
+            self.do_update(class_name + " " + id + " " + attribute_name + " "
+                           + attribute_value)
 
     def do_count(self, class_name):
         """Prints the count of instances based on the class name.
