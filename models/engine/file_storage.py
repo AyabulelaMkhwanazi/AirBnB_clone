@@ -5,6 +5,7 @@ file and deserializes JSON file to instances.
 """
 import json
 from models.base_model import BaseModel
+from models.user import User
 
 
 class FileStorage:
@@ -59,8 +60,13 @@ class FileStorage:
                 deserialized_objects = {}
                 # iterate over each item in the data
                 for key, value in data.items():
-                    # convert the dict to a BaseModel obj and store it
-                    deserialized_objects[key] = BaseModel(**value)
+                    # get the class name from the key
+                    class_name = key.split('.')[0]
+                    # convert the dict to an object of the appr. class & store
+                    if class_name == "BaseModel":
+                        deserialized_objects[key] = BaseModel(**value)
+                    elif class_name == "User":
+                        deserialized_objects[key] = User(**value)
                 # assign the deserialized objects dictionary to self.__objects
                 self.__objects = deserialized_objects
         except FileNotFoundError:

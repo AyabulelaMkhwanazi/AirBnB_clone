@@ -5,6 +5,7 @@ of the command interpreter.
 """
 from models import storage
 from models.base_model import BaseModel
+from models.user import User
 import cmd
 
 
@@ -12,6 +13,7 @@ class HBNBCommand(cmd.Cmd):
     """Contains the entry point of the command interpreter.
     """
     prompt = '(hbnb) '
+    valid_classes = ["BaseModel", "User"]
 
     def do_quit(self, line):
         """Quit command to exit the program.
@@ -34,10 +36,13 @@ and prints the id.
         """
         if not line:
             print("** class name missing **")
-        elif line != "BaseModel":
+        elif line not in self.valid_classes:
             print("** class doesn't exist **")
         else:
-            new_instance = BaseModel()
+            if line == "BaseModel":
+                new_instance = BaseModel()
+            elif line == "User":
+                new_instance = User()
             new_instance.save()
             print(new_instance.id)
 
@@ -48,7 +53,7 @@ class name and id.
         args = line.split()
         if len(args) == 0:
             print("** class name missing **")
-        elif args[0] != "BaseModel":
+        elif args[0] not in self.valid_classes:
             print("** class doesn't exist **")
         elif len(args) == 1:
             print("** instance id missing **")
@@ -65,7 +70,7 @@ class name and id.
         args = line.split()
         if len(args) == 0:
             print("** class name missing **")
-        elif args[0] != "BaseModel":
+        elif args[0] not in self.valid_classes:
             print("** class doesn't exist **")
         elif len(args) == 1:
             print("** instance id missing **")
@@ -82,7 +87,7 @@ class name and id.
 not on the class name.
         """
         args = line.split()
-        if len(args) > 0 and args[0] != "BaseModel":
+        if len(args) > 0 and args[0] not in self.valid_classes:
             print("** class doesn't exist **")
         else:
             for key, obj in storage.all().items():
@@ -95,7 +100,7 @@ or updating attribute.
         args = line.split()
         if len(args) == 0:
             print("** class name missing **")
-        elif args[0] != "BaseModel":
+        elif args[0] not in self.valid_classes:
             print("** class doesn't exist **")
         elif len(args) == 1:
             print("** instance id missing **")
