@@ -3,9 +3,14 @@
 This module contains a class 'FileStorage' that serializes instances to a JSON
 file and deserializes JSON file to instances.
 """
-import json
+from models.amenity import Amenity
 from models.base_model import BaseModel
+from models.city import City
+from models.place import Place
+from models.review import Review
+from models.state import State
 from models.user import User
+import json
 
 
 class FileStorage:
@@ -67,6 +72,16 @@ class FileStorage:
                         deserialized_objects[key] = BaseModel(**value)
                     elif class_name == "User":
                         deserialized_objects[key] = User(**value)
+                    elif class_name == "Place":
+                        deserialized_objects[key] = Place(**value)
+                    elif class_name == "State":
+                        deserialized_objects[key] = State(**value)
+                    elif class_name == "City":
+                        deserialized_objects[key] = City(**value)
+                    elif class_name == "Amenity":
+                        deserialized_objects[key] = Amenity(**value)
+                    elif class_name == "Review":
+                        deserialized_objects[key] = Review(**value)
                 # assign the deserialized objects dictionary to self.__objects
                 self.__objects = deserialized_objects
         except FileNotFoundError:

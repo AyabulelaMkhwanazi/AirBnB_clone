@@ -4,7 +4,12 @@ This module contains a class HBNBCommand that contains the entry point
 of the command interpreter.
 """
 from models import storage
+from models.amenity import Amenity
 from models.base_model import BaseModel
+from models.city import City
+from models.place import Place
+from models.review import Review
+from models.state import State
 from models.user import User
 import cmd
 
@@ -13,7 +18,8 @@ class HBNBCommand(cmd.Cmd):
     """Contains the entry point of the command interpreter.
     """
     prompt = '(hbnb) '
-    valid_classes = ["BaseModel", "User"]
+    valid_classes = ["BaseModel", "User", "Place", "State", "City",
+                     "Amenity", "Review"]
 
     def do_quit(self, line):
         """Quit command to exit the program.
@@ -43,6 +49,16 @@ and prints the id.
                 new_instance = BaseModel()
             elif line == "User":
                 new_instance = User()
+            elif line == "Place":
+                new_instance = Place()
+            elif line == "State":
+                new_instance = State()
+            elif line == "City":
+                new_instance = City()
+            elif line == "Amenity":
+                new_instance = Amenity()
+            elif line == "Review":
+                new_instance = Review()
             new_instance.save()
             print(new_instance.id)
 
