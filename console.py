@@ -138,18 +138,30 @@ or updating attribute.
     def default(self, line):
         """Method called on an input line when the command prefix is not
 recognized.
-In this case it will be used to handle the <class name>.all() syntax.
+In this case it will be used to handle the <class name>.all(),
+<class name>.count(), and <class name>.show(<id>) syntax.
         """
         if len(line.split(".")) != 2:
             print("** Unknown syntax: {}".format(line))
             return
         class_name, method = line.split(".")
+        # check if the class name is valid
         if class_name not in self.valid_classes:
             print("** class doesn't exist **")
+        # if the method is 'all()', call the 'do_all' method
         elif method == "all()":
             self.do_all(class_name)
+        # if the method is 'count()', call the 'do_count' method
         elif method == "count()":
             self.do_count(class_name)
+        # if the method starts with 'show(' and ends with ')', it's a 'show'
+        # command
+        elif method.startswith("show(") and method.endswith(")"):
+            id = method[5:-1]  # extracting the id from the method string
+            # remove the quotes from the id if they're present
+            id = id.strip('"')
+            # call da 'do_show' method with the class name and id as arguments
+            self.do_show(class_name + " " + id)
 
     def do_count(self, class_name):
         """Prints the count of instances based on the class name.
