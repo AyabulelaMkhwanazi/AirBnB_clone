@@ -107,7 +107,8 @@ not on the class name.
             print("** class doesn't exist **")
         else:
             for key, obj in storage.all().items():
-                print(str(obj))
+                if key.split('.')[0] == args[0]:
+                    print(str(obj))
 
     def do_update(self, line):
         """Updates an instance based on the class name and id by adding
@@ -133,6 +134,20 @@ or updating attribute.
                 value = args[3].strip('"')
                 setattr(storage.all()[key], args[2], value)
                 storage.save()
+
+    def default(self, line):
+        """Method called on an input line when the command prefix is not
+recognized.
+In this case it will be used to handle the <class name>.all() syntax.
+        """
+        if len(line.split(".")) != 2:
+            print("** Unknown syntax: {}".format(line))
+            return
+        class_name, method = line.split(".")
+        if class_name not in self.valid_classes:
+            print("** class doesn't exist **")
+        elif method == "all()":
+            self.do_all(class_name)
 
 
 if __name__ == '__main__':
