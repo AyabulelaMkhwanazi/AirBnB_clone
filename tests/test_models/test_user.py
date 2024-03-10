@@ -40,6 +40,10 @@ class TestUser(unittest.TestCase):
         self.assertEqual(self.user.password, "")
         self.assertEqual(self.user.first_name, "")
         self.assertEqual(self.user.last_name, "")
+        self.assertIsInstance(self.user.email, str)
+        self.assertIsInstance(self.user.password, str)
+        self.assertIsInstance(self.user.first_name, str)
+        self.assertIsInstance(self.user.last_name, str)
 
 
 if __name__ == '__main__':
