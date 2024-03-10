@@ -148,6 +148,17 @@ In this case it will be used to handle the <class name>.all() syntax.
             print("** class doesn't exist **")
         elif method == "all()":
             self.do_all(class_name)
+        elif method == "count()":
+            self.do_count(class_name)
+
+    def do_count(self, class_name):
+        """Prints the count of instances based on the class name.
+        """
+        count = 0
+        for key in storage.all():
+            if key.split('.')[0] == class_name:
+                count += 1
+        print(count)
 
 
 if __name__ == '__main__':
