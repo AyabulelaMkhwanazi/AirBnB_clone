@@ -1,4 +1,4 @@
 
 # 0x00. AirBnB clone - The console
 
-**This is a group project**
+**A paired effort done by a group of 2**
