@@ -118,12 +118,18 @@ not on the class name.
         """Updates an instance based on the class name and id by adding
 or updating attribute.
         """
-        class_name, id, updates_str = line.split(" ", 2)
-        if not class_name or class_name not in self.valid_classes:
+        args = line.split(" ", 2)
+        if len(args) < 3:
+            if len(args) < 1:
+                print("** class name missing **")
+            elif len(args) < 2:
+                print("** instance id missing **")
+            else:
+                print("** attribute name missing **")
+        elif args[0] not in self.valid_classes:
             print("** class doesn't exist **")
-        elif not id:
-            print("** instance id missing **")
         else:
+            class_name, id, updates_str = args
             key = class_name + "." + id
             if key not in storage.all():
                 print("** no instance found **")
