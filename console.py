@@ -119,7 +119,7 @@ not on the class name.
 or updating attribute.
         """
         args = line.split(" ", 2)
-        if len(args) <= 3:
+        if len(args) < 3:
             if len(args) <= 1:
                 print("** class name missing **")
             elif len(args) <= 2:
