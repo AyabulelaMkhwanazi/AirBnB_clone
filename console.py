@@ -120,7 +120,7 @@ or updating attribute.
         """
         args = line.split(" ", 2)
         if len(args) < 3:
-            if len(args) < 1:
+            if len(args) <= 1:
                 print("** class name missing **")
             elif len(args) < 2:
                 print("** instance id missing **")
@@ -200,7 +200,6 @@ In this case it will be used to handle the <class name>.all(),
                 # call the 'do_update' method with class name,
                 # id, and the updates dictionary as arguments
                 self.do_update(class_name + " " + id + " " + str(updates))
-
 
     def do_count(self, class_name):
         """Prints the count of instances based on the class name.
