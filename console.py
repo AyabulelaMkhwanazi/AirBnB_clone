@@ -119,14 +119,13 @@ not on the class name.
 or updating attribute.
         """
         args = line.split(" ", 2)
-        if len(args) <= 1:
-            print("** class name missing **")
-        elif len(args) <= 2:
-            print("** instance id missing **")
-        elif len(args) <= 3:
-            print("** attribute name missing **")
-        elif len(args) <= 4:
-            print("** value missing **")
+        if len(args) <= 3:
+            if len(args) <= 1:
+                print("** class name missing **")
+            elif len(args) <= 2:
+                print("** instance id missing **")
+            else:
+                print("** attribute name missing **")
         elif args[0] not in self.valid_classes:
             print("** class doesn't exist **")
         else:
@@ -135,13 +134,7 @@ or updating attribute.
             if key not in storage.all():
                 print("** no instance found **")
             else:
-                # check if updates_str is a dictionary or a single attribute
-                # update
-                if "{" in updates_str and "}" in updates_str:
-                    updates = ast.literal_eval(updates_str)
-                else:
-                    attr_name, attr_value = updates_str.split(" ", 1)
-                    updates = {attr_name: attr_value}
+                updates = ast.literal_eval(updates_str)
                 for attr, value in updates.items():
                     setattr(storage.all()[key], attr, value)
                 storage.all()[key].save()
