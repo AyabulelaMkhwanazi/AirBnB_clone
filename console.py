@@ -111,7 +111,7 @@ not on the class name.
             print("** class doesn't exist **")
         else:
             for key, obj in storage.all().items():
-                if key.split('.')[0] == args[0]:
+                if len(args) == 0 or key.split('.')[0] == args[0]:
                     print(str(obj))
                     
     def do_update(self, line):
