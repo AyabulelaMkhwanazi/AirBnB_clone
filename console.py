@@ -122,7 +122,7 @@ or updating attribute.
         if len(args) < 3:
             if len(args) <= 1:
                 print("** class name missing **")
-            elif len(args) <= 2:
+            elif len(args) == 2:
                 print("** instance id missing **")
             else:
                 print("** attribute name missing **")
