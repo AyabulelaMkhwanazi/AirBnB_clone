@@ -118,18 +118,12 @@ not on the class name.
         """Updates an instance based on the class name and id by adding
 or updating attribute.
         """
-        args = line.split(" ", 2)
-        if len(args) < 3:
-            if len(args) <= 1:
-                print("** class name missing **")
-            elif len(args) == 2:
-                print("** instance id missing **")
-            else:
-                print("** attribute name missing **")
-        elif args[0] not in self.valid_classes:
+        class_name, id, updates_str = line.split(" ", 2)
+        if not class_name or class_name not in self.valid_classes:
             print("** class doesn't exist **")
+        elif not id:
+            print("** instance id missing **")
         else:
-            class_name, id, updates_str = args
             key = class_name + "." + id
             if key not in storage.all():
                 print("** no instance found **")
@@ -200,6 +194,7 @@ In this case it will be used to handle the <class name>.all(),
                 # call the 'do_update' method with class name,
                 # id, and the updates dictionary as arguments
                 self.do_update(class_name + " " + id + " " + str(updates))
+
 
     def do_count(self, class_name):
         """Prints the count of instances based on the class name.
