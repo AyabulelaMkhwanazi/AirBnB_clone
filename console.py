@@ -113,38 +113,25 @@ not on the class name.
             for key, obj in storage.all().items():
                 if key.split('.')[0] == args[0]:
                     print(str(obj))
-
+                    
     def do_update(self, line):
         """Updates an instance based on the class name and id by adding
 or updating attribute.
         """
-        args = line.split()
-        if len(args) == 0:
-            print("** class name missing **")
-        elif args[0] not in self.valid_classes:
+        class_name, id, updates_str = line.split(" ", 2)
+        if not class_name or class_name not in self.valid_classes:
             print("** class doesn't exist **")
-        elif len(args) == 1:
+        elif not id:
             print("** instance id missing **")
-        elif len(args) == 2:
-            print("** attribute name missing **")
-        elif len(args) == 3:
-            print("** value missing **")
         else:
-            key = args[0] + "." + args[1]
+            key = class_name + "." + id
             if key not in storage.all():
                 print("** no instance found **")
             else:
-                # remove the double quotes from args[3]
-                value = args[3].strip('"')
-                try:
-                    value = int(value)
-                except ValueError:
-                    try:
-                        value = float(value)
-                    except ValueError:
-                        pass
-                setattr(storage.all()[key], args[2], value)
-                storage.save()
+                updates = ast.literal_eval(updates_str)
+                for attr, value in updates.items():
+                    setattr(storage.all()[key], attr, value)
+                storage.all()[key].save()
 
     def default(self, line):
         """Method called on an input line when the command prefix is not
@@ -187,19 +174,27 @@ In this case it will be used to handle the <class name>.all(),
             # 'update' command
         elif method.startswith("update(") and method.endswith(")"):
             # extract the id from the method string
-            args = method[7:-1].split(", ")
-            if len(args) != 3:
-                print("** Invalid arguments **")
-                return
-            id, attribute_name, attribute_value = args
-            # remove the quotes from the args if they're present
-            id = id.strip('"')
-            attribute_name = attribute_name.strip('"')
-            attribute_value = attribute_value.strip('"')
-            # call 'do_upate' with class name, id, attribute name, and attr-
-            # value as args
-            self.do_update(class_name + " " + id + " " + attribute_name
-                           + " " + attribute_value)
+            id = method[7: -1].split(", ")[0].strip('"')
+            # check if the method contains a dictionary or single attribute
+            # update
+            if "{" in method and "}" in method:
+                # use regular expression to extract dictionary from
+                # the method string
+                dict_repr = re.search("{.*}", method).group()
+                updates = ast.literal_eval(dict_repr)
+                # call the 'do_update' method with class name,
+                # id, attribute name and attribute value as arguments
+                self.do_update(class_name + " " + id + " " + str(updates))
+            else:
+                # extract attribute name and value from the method string
+                attr_name = method[7: -1].split(", ")[1].strip('"')
+                attr_value = method[7: -1].split(", ")[2].strip('"')
+                # create a dictionary for the update
+                updates = {attr_name: attr_value}
+                # call the 'do_update' method with class name,
+                # id, and the updates dictionary as arguments
+                self.do_update(class_name + " " + id + " " + str(updates))
+
 
     def do_count(self, class_name):
         """Prints the count of instances based on the class name.
