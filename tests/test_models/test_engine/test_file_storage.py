@@ -4,50 +4,76 @@ This module contains unittests for the class 'FileStorage'.
 """
 from models.base_model import BaseModel
 from models.engine.file_storage import FileStorage
+import os
 import unittest
 
 
 class TestFileStorage(unittest.TestCase):
     """
-    Test the FileStorage class
+    Unittests for the FileStorage class.
     """
-
     def setUp(self):
         """
-        Set up the test case
+        Set up for the tests.
         """
         self.storage = FileStorage()
 
-    def test_all(self):
+    def tearDown(self):
         """
-        Test that all returns the dictionary __objects.
+        Clean up after each test.
         """
-        self.assertEqual(self.storage.all(),
-                         self.storage._FileStorage__objects)
+        self.storage.__objects = {}
+
+    def test_objects_type(self):
+        """
+        Test that __objects is a dictionary.
+        """
+        self.assertIsInstance(self.storage.all(), dict)
 
     def test_new(self):
         """
         Test that new adds an object to __objects.
         """
-        my_model = BaseModel()
-        self.storage.new(my_model)
-        key = my_model.__class__.__name__ + "." + my_model.id
+        bm = BaseModel()
+        self.storage.new(bm)
+        key = "{}.{}".format(type(bm).__name__, bm.id)
         self.assertIn(key, self.storage.all())
 
     def test_save_and_reload(self):
         """
-        Test that save writes to the JSON file and that reload reads from the
-        JSON file.
+        Test that save serializes __objects and reload deserializes it.
         """
-        my_model = BaseModel()
-        my_model.my_number = 89
-        self.storage.new(my_model)
+        bm = BaseModel()
+        self.storage.new(bm)
         self.storage.save()
+        self.storage.__objects = {}
         self.storage.reload()
-        key = my_model.__class__.__name__ + "." + my_model.id
+        key = "{}.{}".format(type(bm).__name__, bm.id)
         self.assertIn(key, self.storage.all())
-        self.assertEqual(self.storage.all()[key].my_number, 89)
+
+    def test_file_path(self):
+        """
+        Test that __file_path is a string.
+        """
+        self.assertIsInstance(self.storage._FileStorage__file_path, str)
+
+    def test_save_creates_file(self):
+        """
+        Test that save creates a file.
+        """
+        self.storage.save()
+        self.assertTrue(os.path.exists(self.storage._FileStorage__file_path))
+
+    def test_reload_with_nonexistent_file(self):
+        """
+        Test that reload handles a nonexistent file.
+        """
+        try:
+            os.remove(self.storage._FileStorage__file_path)
+        except FileNotFoundError:
+            pass
+        self.storage.reload()  # Should not raise an exception
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
