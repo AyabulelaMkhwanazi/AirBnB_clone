@@ -229,25 +229,28 @@ class TestHBNBCommandWithPatch(unittest.TestCase):
 
         with patch("sys.stdout", new=StringIO()) as output:
             console.do_destroy("")
-            self.assertEqual("** class name missing **", output.getvalue().strip())
+            self.assertEqual("** class name missing **",
+                             output.getvalue().strip())
 
         with patch("sys.stdout", new=StringIO()) as output:
             console.do_destroy("InvalidClass")
-            self.assertEqual("** class doesn't exist **", output.getvalue().strip())
+            self.assertEqual("** class doesn't exist **",
+                             output.getvalue().strip())
 
         with patch("sys.stdout", new=StringIO()) as output:
             console.do_destroy("BaseModel")
-            self.assertEqual("** instance id missing **", output.getvalue().strip())
+            self.assertEqual("** instance id missing **",
+                             output.getvalue().strip())
 
         with patch("sys.stdout", new=StringIO()) as output:
             console.do_destroy("BaseModel " + "1234")
-            self.assertEqual("** no instance found **", output.getvalue().strip())
+            self.assertEqual("** no instance found **",
+                             output.getvalue().strip())
 
         with patch("sys.stdout", new=StringIO()) as output:
             console.do_destroy("BaseModel " + base_model.id)
             self.assertEqual("", output.getvalue().strip())
             self.assertNotIn("BaseModel." + base_model.id, storage.all())
-
 
 
 if __name__ == '__main__':

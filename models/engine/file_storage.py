@@ -39,17 +39,16 @@ class FileStorage:
         """
         Sets in __objects the obj with key <obj class name>.id
         """
-        key = obj.__class__.__name__ + "." + obj.id
-        self.__objects[key] = obj
+        key = obj.__class__.__name__
+        self.__objects["{}.{}".format(key, obj.id)] = obj
 
     def save(self):
         """
         Serializes __objects to the JSON file (path: __file_path).
         """
-        serialized_objects = {}
-        # iterate over eaach item in self.__objects
-        for key, obj in self.__objects.items():
-            serialized_objects[key] = obj.to_dict()
+        obj = self.__objects
+        serialized_objects = {objs: obj[objs].to_dict()
+                              for objs in obj.keys()}
         with open(self.__file_path, mode="w") as file:
             json.dump(serialized_objects, file)
 
@@ -62,27 +61,9 @@ class FileStorage:
             with open(self.__file_path, mode="r") as file:
                 # load the data from the file
                 data = json.load(file)
-                deserialized_objects = {}
-                # iterate over each item in the data
-                for key, value in data.items():
-                    # get the class name from the key
-                    class_name = key.split('.')[0]
-                    # convert the dict to an object of the appr. class & store
-                    if class_name == "BaseModel":
-                        deserialized_objects[key] = BaseModel(**value)
-                    elif class_name == "User":
-                        deserialized_objects[key] = User(**value)
-                    elif class_name == "Place":
-                        deserialized_objects[key] = Place(**value)
-                    elif class_name == "State":
-                        deserialized_objects[key] = State(**value)
-                    elif class_name == "City":
-                        deserialized_objects[key] = City(**value)
-                    elif class_name == "Amenity":
-                        deserialized_objects[key] = Amenity(**value)
-                    elif class_name == "Review":
-                        deserialized_objects[key] = Review(**value)
-                # assign the deserialized objects dictionary to self.__objects
-                self.__objects = deserialized_objects
+                for value in data.values():
+                    class_name = value["__class__"]
+                    del value["__class__"]
+                    self.new(eval(class_name)(**value))
         except FileNotFoundError:
             pass
