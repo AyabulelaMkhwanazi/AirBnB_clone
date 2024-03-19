@@ -74,6 +74,17 @@ class TestFileStorage(unittest.TestCase):
             pass
         self.storage.reload()  # Should not raise an exception
 
+    def test_save_updates_file(self):
+        """
+        Test that save updates the file.
+        """
+        bm = BaseModel()
+        self.storage.new(bm)
+        self.storage.save()
+        with open(self.storage._FileStorage__file_path, "r") as file:
+            contents = file.read()
+            self.assertIn(bm.id, contents)
+
 
 if __name__ == "__main__":
     unittest.main()
