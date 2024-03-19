@@ -22,8 +22,36 @@ class HBNBCommand(cmd.Cmd):
     """Contains the entry point of the command interpreter.
     """
     prompt = '(hbnb) '
-    valid_classes = ["BaseModel", "User", "Place", "State", "City",
-                     "Amenity", "Review"]
+    __valid_classes = ["BaseModel", "User", "Place", "State", "City",
+                       "Amenity", "Review"]
+
+    @staticmethod
+    def __parse_method(line):
+        # Search for content within curly braces
+        curly_b = re.search(r"\{(.*?)\}", line)
+        # Search for content within square_b
+        square_b = re.search(r"\[(.*?)\]", line)
+
+        # If there's no content in curly braces
+        if curly_b is None:
+            # If there's also no content in square_b
+            if square_b is None:
+                # Split the argument string and strip commas
+                return [item.strip(",") for item in shlex.split(line)]
+            else:
+                # Split the argument string up to the square_b
+                split_square = shlex.split(line[:square_b.span()[0]])
+                # Strip commas and append the content in square_b
+                parsed_args = [item.strip(",") for item in split_square]
+                parsed_args.append(square_b.group())
+                return parsed_args
+        else:
+            # Split the argument string up to the curly braces
+            split_curly = shlex.split(line[:curly_b.span()[0]])
+            # Strip commas and append the content in curly braces
+            parsed_args = [item.strip(",") for item in split_curly]
+            parsed_args.append(curly_b.group())
+            return parsed_args
 
     def do_quit(self, line):
         """Quit command to exit the program.
@@ -31,8 +59,9 @@ class HBNBCommand(cmd.Cmd):
         return True
 
     def do_EOF(self, line):
-        """ECF command to exit the program.
+        """EOF command to exit the program
         """
+        print("")
         return True
 
     def emptyline(self):
@@ -43,10 +72,11 @@ class HBNBCommand(cmd.Cmd):
     def do_create(self, line):
         """Creates a new instance of BaseModel, saves it (to the JSON file)
 and prints the id.
+Usage: create <class_name>
         """
         if not line:
             print("** class name missing **")
-        elif line not in self.valid_classes:
+        elif line not in self.__valid_classes:
             print("** class doesn't exist **")
         else:
             if line == "BaseModel":
@@ -68,12 +98,11 @@ and prints the id.
 
     def do_show(self, line):
         """Prints the string representation of an instance based on the
-class name and id.
-        """
-        args = line.split()
+class name and id. Usage: show <class_name> <id> or <class_name>.show(<id>)"""
+        args = self.__parse_method(line)
         if len(args) == 0:
             print("** class name missing **")
-        elif args[0] not in self.valid_classes:
+        elif args[0] not in self.__valid_classes:
             print("** class doesn't exist **")
         elif len(args) == 1:
             print("** instance id missing **")
@@ -86,11 +115,12 @@ class name and id.
 
     def do_destroy(self, line):
         """Deletes an instance based on the class name and id.
+    Usage: destroy <class_name> <id> or <class_name>.destroy(<id>)
         """
-        args = line.split()
+        args = self.__parse_method(line)
         if len(args) == 0:
             print("** class name missing **")
-        elif args[0] not in self.valid_classes:
+        elif args[0] not in self.__valid_classes:
             print("** class doesn't exist **")
         elif len(args) == 1:
             print("** instance id missing **")
@@ -105,103 +135,117 @@ class name and id.
     def do_all(self, line):
         """Prints all string representation of all instances based or
 not on the class name.
+    Usage: all or all <class_name> or <class_name>.all()
         """
-        args = line.split()
-        if len(args) > 0 and args[0] not in self.valid_classes:
+        args = self.__parse_method(line)
+        if len(args) > 0 and args[0] not in self.__valid_classes:
             print("** class doesn't exist **")
         else:
             for key, obj in storage.all().items():
                 if len(args) == 0 or key.split('.')[0] == args[0]:
                     print(str(obj))
-                    
+
     def do_update(self, line):
-        """Updates an instance based on the class name and id by adding
-or updating attribute.
+        """Update a class instance of a given id by adding or updating
+a given attribute key/value pair or dictionary.
+    Usage: update <class_name> <id> <attribute_name> <attribute_value> or
+    <class_name>.update(<id>, <attribute_name>, <attribute_value>) or
+    <class_name>.update(<id>, <dictionary>)
         """
-        class_name, id, updates_str = line.split(" ", 2)
-        if not class_name or class_name not in self.valid_classes:
+        args = self.__parse_method(line)
+        objdict = storage.all()
+
+        if len(args) == 0:
+            print("** class name missing **")
+            return False
+        if args[0] not in self.__valid_classes:
             print("** class doesn't exist **")
-        elif not id:
+            return False
+        if len(args) == 1:
             print("** instance id missing **")
-        else:
-            key = class_name + "." + id
-            if key not in storage.all():
-                print("** no instance found **")
+            return False
+        if "{}.{}".format(args[0], args[1]) not in objdict.keys():
+            print("** no instance found **")
+            return False
+        if len(args) == 2:
+            print("** attribute name missing **")
+            return False
+        if len(args) == 3:
+            try:
+                type(eval(args[2])) != dict
+            except NameError:
+                print("** value missing **")
+                return False
+
+        if len(args) == 4:
+            obj = objdict["{}.{}".format(args[0], args[1])]
+            if args[2] in obj.__class__.__dict__.keys():
+                attr_type = type(obj.__class__.__dict__[args[2]])
+                obj.__dict__[args[2]] = attr_type(args[3])
             else:
-                updates = ast.literal_eval(updates_str)
-                for attr, value in updates.items():
-                    setattr(storage.all()[key], attr, value)
-                storage.all()[key].save()
+                obj.__dict__[args[2]] = args[3]
+        elif type(eval(args[2])) == dict:
+            obj = objdict["{}.{}".format(args[0], args[1])]
+            for k, v in eval(args[2]).items():
+                if (k in obj.__class__.__dict__.keys() and
+                        type(obj.__class__.__dict__[k]) in {str, int, float}):
+                    attr_type = type(obj.__class__.__dict__[k])
+                    obj.__dict__[k] = attr_type(v)
+                else:
+                    obj.__dict__[k] = v
+        storage.save()
 
     def default(self, line):
-        """Method called on an input line when the command prefix is not
-recognized.
-In this case it will be used to handle the <class name>.all(),
-<class name>.count(), <class name>.show(<id>) and
-<class name>.destroy(<id>),
-<class name>.update(<id>, <attribute name>, <attribute value>),
-<class name>.update(<id>, <dictionary representation>) syntax.
         """
-        if len(line.split(".")) != 2:
-            print("** Unknown syntax: {}".format(line))
-            return
-        class_name, method = line.split(".")
-        # check if the class name is valid
-        if class_name not in self.valid_classes:
-            print("** class doesn't exist **")
-        # if the method is 'all()', call the 'do_all' method
-        elif method == "all()":
-            self.do_all(class_name)
-        # if the method is 'count()', call the 'do_count' method
-        elif method == "count()":
-            self.do_count(class_name)
-        # if the method starts with 'show(' and ends with ')', it's a 'show'
-        # command
-        elif method.startswith("show(") and method.endswith(")"):
-            id = method[5:-1]  # extracting the id from the method string
-            # remove the quotes from the id if they're present
-            id = id.strip('"')
-            # call da 'do_show' method with the class name and id as arguments
-            self.do_show(class_name + " " + id)
-        # if method starts with 'destroy(' & ends with ')', it's a 'destroy'
-        # command
-        elif method.startswith("destroy(") and method.endswith(")"):
-            id = method[8:-1]
-            id = id.strip('"')  # extract the quotes, like before (if any)
-            # call the 'do_destroy' method with the class name and id as args
-            self.do_destroy(class_name + " " + id)
-            # if the method starts with 'update(' & ends with ')', its an
-            # 'update' command
-        elif method.startswith("update(") and method.endswith(")"):
-            # extract the id from the method string
-            id = method[7: -1].split(", ")[0].strip('"')
-            # check if the method contains a dictionary or single attribute
-            # update
-            if "{" in method and "}" in method:
-                # use regular expression to extract dictionary from
-                # the method string
-                dict_repr = re.search("{.*}", method).group()
-                updates = ast.literal_eval(dict_repr)
-                # call the 'do_update' method with class name,
-                # id, attribute name and attribute value as arguments
-                self.do_update(class_name + " " + id + " " + str(updates))
-            else:
-                # extract attribute name and value from the method string
-                attr_name = method[7: -1].split(", ")[1].strip('"')
-                attr_value = method[7: -1].split(", ")[2].strip('"')
-                # create a dictionary for the update
-                updates = {attr_name: attr_value}
-                # call the 'do_update' method with class name,
-                # id, and the updates dictionary as arguments
-                self.do_update(class_name + " " + id + " " + str(updates))
+        Method called on an input line when the command prefix is not
+        recognised.
+        In this case, it tries to __parse_method the line as a command
+        in the format <class>.<command>(<args>).
+        """
+        # Dictionary of available commands
+        command_dictionary = {
+            "all": self.do_all,
+            "show": self.do_show,
+            "destroy": self.do_destroy,
+            "count": self.do_count,
+            "update": self.do_update
+        }
 
+        # Check if the line contains a '.'
+        match = re.search(r"\.", line)
+        if match is not None:
+            # If it does, split the line into the class name and the rest
+            class_command = [line[:match.span()[0]],
+                             line[match.span()[1]:]]
 
-    def do_count(self, class_name):
+            # Check if the rest of the line contains a '(' and a ')'
+            match = re.search(r"\((.*?)\)", class_command[1])
+            if match is not None:
+                # If it does, split the rest of the line into the command
+                # and the arguments
+                command_args = [class_command[1][:match.span()[0]],
+                                match.group()[1:-1]]
+
+                # Check if the command is in the dictionary of available
+                # commands
+                if command_args[0] in command_dictionary.keys():
+                    # If it is, format the arguments and call the command
+                    format_args = "{} {}".format(class_command[0],
+                                                 command_args[1])
+                    return command_dictionary[command_args[0]](format_args)
+
+        # If the line couldn't be parsed as a command, print an error message
+        print("*** Unknown syntax: {}".format(line))
+        return False
+
+    def do_count(self, line):
         """Prints the count of instances based on the class name.
+    Usage: count <class_name> or <class_name>.count()
         """
+        args = self.__parse_method(line)
         count = 0
-        for key in storage.all():
-            if key.split('.')[0] == class_name:
+        for key in storage.all().values():
+            if args[0] == key.__class__.__name__:
                 count += 1
         print(count)
 

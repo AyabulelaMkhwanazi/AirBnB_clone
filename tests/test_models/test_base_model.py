@@ -47,6 +47,17 @@ class TestBaseModel(unittest.TestCase):
         my_model_dict = self.my_model.to_dict()
         self.assertEqual(my_model_dict["__class__"], "BaseModel")
 
+    def test_str_representation(self):
+        """
+        Test that __str__ returns a string representation of the BaseModel
+        instance.
+        """
+        my_model_str = self.my_model.__str__()
+        expected = "[{}] ({}) {}".format(self.my_model.__class__.__name__,
+                                         self.my_model.id,
+                                         self.my_model.__dict__)
+        self.assertEqual(my_model_str, expected)
+
     def test_created_at_updated_at_format(self):
         """
         Test that created_at and updated_at are in ISO format in the output of
