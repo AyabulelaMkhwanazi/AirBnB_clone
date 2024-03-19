@@ -17,39 +17,35 @@ class FileStorage:
     """
     Serializes instances to a JSON file and deserializes JSON file to
     instances.
-    """
 
-    def __init__(self):
-        """
-        Initializes the FileStorage class.
-
+    Args:
         __file_path (str): path to the JSON file.
-        __objects: stores all objects by <class name>.id
-        """
-        self.__file_path = "file.json"
-        self.__objects = {}
+        __objects {dict}: stores all objects by <class name>.id
+     """
+    __file_path = "file.json"
+    __objects = {}
 
     def all(self):
         """
         Returns the dictionary __objects.
         """
-        return self.__objects
+        return FileStorage.__objects
 
     def new(self, obj):
         """
         Sets in __objects the obj with key <obj class name>.id
         """
         key = obj.__class__.__name__
-        self.__objects["{}.{}".format(key, obj.id)] = obj
+        FileStorage.__objects["{}.{}".format(key, obj.id)] = obj
 
     def save(self):
         """
         Serializes __objects to the JSON file (path: __file_path).
         """
-        obj = self.__objects
+        obj = FileStorage.__objects
         serialized_objects = {objs: obj[objs].to_dict()
                               for objs in obj.keys()}
-        with open(self.__file_path, mode="w") as file:
+        with open(FileStorage.__file_path, mode="w") as file:
             json.dump(serialized_objects, file)
 
     def reload(self):
@@ -58,7 +54,7 @@ class FileStorage:
         (__file_path) exists).
         """
         try:
-            with open(self.__file_path, mode="r") as file:
+            with open(FileStorage.__file_path, mode="r") as file:
                 # load the data from the file
                 data = json.load(file)
                 for value in data.values():
